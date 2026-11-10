@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asistan Paneli</title>
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--tx:#1b2a33;--mu:#64748b;--ac:#0e7c86;--bd:#dde3e8;--ok:#bfe8c9;--okt:#14532d;--pe:#fde68a;--pet:#713f12;--cl:#d1d5db;--clt:#4b5563;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181d;--card:#18232a;--tx:#e6eef2;--mu:#94a3b8;--ac:#35b5c0;--bd:#2c3b45;--ok:#1f5a35;--okt:#d1fae5;--pe:#7a5b10;--pet:#fef3c7;--cl:#374151;--clt:#d1d5db;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10181d;--card:#18232a;--tx:#e6eef2;--mu:#94a3b8;--ac:#35b5c0;--bd:#2c3b45;--ok:#1f5a35;--okt:#d1fae5;--pe:#7a5b10;--pet:#fef3c7;--cl:#374151;--clt:#d1d5db;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:5}
+.in{max-width:960px;margin:auto;padding:10px 14px}
+.warn{background:var(--pe);color:var(--pet);font-size:12px;text-align:center;padding:4px}
+nav{display:flex;gap:6px;overflow-x:auto}
+nav button,.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on,.btn.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn.s{padding:4px 9px;font-size:13px}.btn.r{color:#b91c1c}
+main{max-width:960px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+h1{font-size:26px;margin:.2em 0}h2{font-size:18px;margin:.2em 0 .6em}h3{font-size:15px;margin:0}
+.mu{color:var(--mu)}.g{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.hero{background:linear-gradient(135deg,var(--ac),#1d4e89);color:#fff;border-radius:14px;padding:28px 18px}
+.hero .btn{margin-top:10px;font-weight:600;color:var(--ac)}
+.slot{display:flex;gap:8px;align-items:center;border:1px solid var(--bd);border-radius:8px;padding:7px 10px;margin-bottom:5px;cursor:pointer}
+.slot b{width:46px}.ok{background:var(--ok);color:var(--okt)}.pe{background:var(--pe);color:var(--pet)}.cl{background:var(--cl);color:var(--clt)}.tamam{background:var(--ok);color:var(--okt);opacity:.65}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{padding:6px 10px;border:1px solid var(--bd);border-radius:20px;cursor:pointer;background:var(--card);color:var(--tx)}.chip.on{background:var(--ac);color:#fff}
+input,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit;margin:4px 0 8px}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin:6px 0}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px;border:1px solid var(--bd)}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;min-width:560px}.wk div{border-radius:6px;padding:3px;text-align:center;font-size:11px;min-height:22px}
+.mo{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.mo div{border:1px solid var(--bd);border-radius:8px;padding:6px 3px;text-align:center;font-size:12px;cursor:pointer}
+.sc{overflow-x:auto}.dayr{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}.dayr .chip{flex:none}.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#det{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92%,420px);display:none;box-shadow:0 8px 30px #0005;z-index:9}
+</style></head><body>
+<div class="bar"><div class="warn">Faz 1 prototip – giriş ve yetki kontrolü yok. Gerçek hasta bilgisi girmeyin.</div>
+<div class="in"><nav id="nav"></nav></div></div>
+<main id="app"></main>
+<div class="card" id="det"></div>
+<script>
+const $=s=>document.querySelector(s),T=['09:00','09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30'];
+const names=['Ayşe K.','Mehmet D.','Elif S.','Can Y.','Zeynep A.','Burak T.'];
+const tr=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+const dt=o=>{const d=new Date();d.setDate(d.getDate()+o);return d};
+const lbl=o=>{const d=dt(o);return d.getDate()+'.'+(d.getMonth()+1)+' '+tr[d.getDay()].slice(0,3)};
+let A=[],closedD=new Set(),closedS=new Set(),id=1,tab='hasta',cv='day',cd=0,pickD=1,pickT=null,sent=null;
+let LOG=[],mv=null,ref=null,last='',ready=false,ADM=true,ROLE='asistan';tab='asistan';
+addEventListener('hashchange',()=>{ADM=true,ROLE='asistan';tab='asistan';det();go()});
+const PH_A=true,seePh=r=>r=='doktor'||(PH_A&&r=='asistan');
+function bookForm(d,t){const n0=clean($('#bn')?.value||''),p0=clean($('#bp')?.value||'');d=d??cd;const tm=T.filter(s=>stOf(d,s).s=='free');det(`<h3>Telefon randevusu</h3><select id="bd" onchange="bookForm(+this.value)">${Array.from({length:30},(_,i)=>i).filter(i=>!isOff(i)).map(i=>`<option value="${i}" ${i==d?'selected':''}>${lbl(i)}</option>`).join('')}</select><select id="bt">${tm.map(s=>`<option ${s==t?'selected':''}>${s}</option>`).join('')||'<option value="">Boş saat yok</option>'}</select><input id="bn" value="${n0}" placeholder="Ad Soyad (sahte isim)"><input id="bp" value="${p0}" inputmode="tel" placeholder="Telefon (sahte numara)"><div class="row"><button class="btn s" onclick="det()">Vazgeç</button><button class="btn p s" onclick="bookOk()">Onaylı kaydet</button></div>`)}
+function bookOk(){const d=+$('#bd').value,t=$('#bt').value,n=clean($('#bn').value.trim());if(!n||!t)return alert('Ad ve saat gerekli.');if(stOf(d,t).s!='free')return alert('Bu saat dolu.');A.push({id:id++,d,t,n,ph:clean($('#bp').value.trim()),st:'ok',by:'Asistan (telefon)'});lg(n+' · '+lbl(d)+' '+t+' telefon randevusu');det();go()}
+const clean=s=>String(s).replace(/[<>&"'`]/g,'');
+const ds=o=>{const d=dt(o);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const off=s=>{const[y,m,d]=s.split('-').map(Number),b=new Date();b.setHours(0,0,0,0);return Math.round((new Date(y,m-1,d)-b)/864e5)};
+const lg=m=>LOG.unshift(clean(new Date().toLocaleString('tr-TR')+' · ['+tab+'] '+m));
+const ser=()=>JSON.stringify({A:A.map(a=>({...a,d:ds(a.d)})),D:[...closedD].map(ds),S:[...closedS].map(k=>ds(+k.slice(0,-5))+'|'+k.slice(-5)),i:id,L:LOG.slice(0,300)});
+const load=v=>{A=(v.A||[]).map(a=>({...a,n:clean(a.n),by:clean(a.by),ph:clean(a.ph||''),d:off(a.d)}));closedD=new Set((v.D||[]).map(off));closedS=new Set((v.S||[]).map(k=>{const[s,t]=k.split('|');return off(s)+t}));id=v.i||1;LOG=(v.L||[]).map(clean)};
+function sync(){if(!ready)return;const s=ser();if(s!==last){last=s;try{localStorage.setItem('klinik-v1',s)}catch(e){}}}
+(()=>{try{const v=localStorage.getItem('klinik-v1');if(v)load(JSON.parse(v))}catch(e){}ready=true;last=ser();addEventListener('storage',e=>{if(e.key=='klinik-v1'&&e.newValue){try{load(JSON.parse(e.newValue));last=ser();go()}catch(x){}}})})();
+function setSt(i,s){const a=A.find(x=>x.id==i);lg(a.n+' · '+lbl(a.d)+' '+a.t+' → '+tx[s]);a.st=s;det();go()}
+function togDay(){if(closedD.has(cd)){closedD.delete(cd);lg(lbl(cd)+' yeniden açıldı')}else{if(A.some(a=>a.d==cd&&a.st!='iptal'&&a.st!='tamam')&&!confirm('Bu günde randevu var. Yine de kapatılsın mı?'))return;closedD.add(cd);lg(lbl(cd)+' kapatıldı')}go()}
+function kayit(){const ar=A.filter(a=>a.st=='iptal'||a.st=='tamam'||a.d<0).sort((x,y)=>y.d-x.d);return`<div class="card"><h2>Arşiv</h2>${ar.map(a=>`<div class="slot ${a.st=='iptal'?'cl':'ok'}" style="cursor:default"><span>${a.n} · ${lbl(a.d)} ${a.t} · ${tx[a.st]||'Onaylı'}</span></div>`).join('')||'<p class="mu">Kayıt yok.</p>'}</div><div class="card"><h2>İşlem kaydı</h2>${LOG.map(l=>`<p class="mu" style="margin:3px 0;font-size:13px">${l}</p>`).join('')||'<p class="mu">Henüz işlem yok.</p>'}</div>`}
+const isOff=d=>dt(d).getDay()==0||closedD.has(d);
+const stOf=(d,t)=>{if(isOff(d)||closedS.has(d+t))return{s:'cl'};const a=A.find(x=>x.d==d&&x.t==t&&x.st!='iptal');return a?{s:a.st,a}:{s:'free'}};
+const tx={ok:'Onaylı',pe:'Onay bekliyor',cl:'Kapalı',free:'Boş',tamam:'Tamamlandı',iptal:'İptal edildi'};
+function nav(){if(!ADM){$('#nav').innerHTML='';return}const t=[['asistan','Asistan'],['takvim','Takvim'],['kayit','Kayıt']];$('#nav').innerHTML=t.map(x=>`<button class="${tab==x[0]?'on':''}" onclick="tab='${x[0]}';det();go()">${x[1]}</button>`).join('')}
+function det(h){const e=$('#det');if(h){e.innerHTML=h;e.style.display='block'}else e.style.display='none'}
+function leg(){return'<div class="leg"><span><i class="ok"></i>Onaylı</span><span><i class="pe"></i>Onay bekleyen</span><span><i class="cl"></i>Kapalı</span><span><i></i>Boş</span></div>'}
+function dayV(role){let h=`<div class="row"><button class="btn s" onclick="cd=Math.max(0,cd-1);go()">‹</button><h3>${lbl(cd)}</h3><button class="btn s" onclick="cd=Math.min(29,cd+1);go()">›</button></div>${leg()}`;
+if(isOff(cd))h+=`<p class="mu">Bu gün kapalı (tatil/izin).</p>`;
+h+=T.map(t=>{const x=stOf(cd,t);return`<div class="slot ${x.s=='free'?'':x.s}" onclick="clk(${cd},'${t}','${role}')"><b>${t}</b><span>${x.a?x.a.n+' · '+tx[x.s]:tx[x.s]}</span></div>`}).join('');return h}
+function clk(d,t,role){const x=stOf(d,t);
+if(mv&&!x.a&&x.s=='free'){const a=A.find(z=>z.id==mv);lg(a.n+': '+lbl(a.d)+' '+a.t+' → '+lbl(d)+' '+t+' taşındı');a.d=d;a.t=t;mv=null;return go()}
+if(x.a)return det(`<h3>${x.a.n}</h3><p class="mu">${lbl(d)} ${t} · ${tx[x.s]} · Kaynak: ${x.a.by}</p>${seePh(role)?`<p>Tel: <b>${x.a.ph||'-'}</b></p>`:''}<div class="row"><button class="btn s" onclick="det()">Kapat</button>${role!='doktor'?`<button class="btn s" onclick="setSt(${x.a.id},'tamam')">Tamamlandı</button><button class="btn s" onclick="mv=${x.a.id};det();go()">Taşı</button><button class="btn s r" onclick="setSt(${x.a.id},'iptal')">İptal et</button>`:''}</div><p class="mu" style="font-size:12px">İptal edilen randevu silinmez, “iptal edildi” olarak arşivde kalır.</p>`);
+if(x.s=='cl'){if(role=='hasta')return;closedS.delete(d+t);if(closedD.has(d)&&role)closedD.delete(d);return go()}
+if(role=='doktor'){closedS.add(d+t);lg(lbl(d)+' '+t+' saati kapatıldı');return go()}
+bookForm(d,t)}
+function wkV(){let h=`<div class="sc"><div class="wk">`;for(let i=0;i<7;i++)h+=`<div><b>${lbl(i)}</b></div>`;
+T.forEach(t=>{for(let i=0;i<7;i++){const s=stOf(i,t).s;h+=`<div class="${s=='free'?'':s}" onclick="cd=${i};cv='day';go()">${t}</div>`}});return h+'</div></div>'+leg()}
+function moV(){let h='<div class="mo">'+['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'].map(x=>`<b style="text-align:center;font-size:12px">${x}</b>`).join('');
+for(let i=0;i<dt(0).getDay();i++)h+='<span></span>';
+for(let d=0;d<30;d++){const c=A.filter(a=>a.d==d&&a.st!='iptal').length;h+=`<div class="${isOff(d)?'cl':c?'ok':''}" onclick="cd=${d};cv='day';go()">${dt(d).getDate()}<br><small>${isOff(d)?'kapalı':c+' rnd'}</small></div>`}return h+'</div>'+leg()}
+function cal(role){return`<div class="card">${mv?'<p class="pe" style="padding:8px;border-radius:8px">Taşınacak randevu seçili: yeni boş saate dokunun. <button class="btn s" onclick="mv=null;go()">Vazgeç</button></p>':''}<div class="chips" style="margin-bottom:10px">${[['day','Gün'],['week','Hafta'],['month','Ay']].map(x=>`<span class="chip ${cv==x[0]?'on':''}" onclick="cv='${x[0]}';go()">${x[1]}</span>`).join('')}</div>${cv=='day'?dayV(role):cv=='week'?wkV():moV()}</div>`}
+function hasta(){let h=`<div class="hero"><small>Dt. Elif Yılmaz Ağız ve Diş Sağlığı Kliniği</small><h1>Gülüşünüz için güvenilir bakım</h1><p>Örnek klinik tanıtım metni. Online randevu talebinizi dakikalar içinde oluşturun.</p><button class="btn" onclick="document.getElementById('rv').scrollIntoView({behavior:'smooth'})">Randevu Al</button> <button class="btn" onclick="alert('Demo: WhatsApp klinik hattına yönlendirir.')">WhatsApp</button></div>
+<div class="g" style="margin:12px 0"><div class="card"><h3>Doktor</h3><p class="mu">Dt. Elif Yılmaz – 12 yıllık deneyim (örnek).</p></div><div class="card"><h3>Hizmetler</h3><p class="mu">Muayene, dolgu, kanal tedavisi, diş taşı temizliği, beyazlatma.</p></div><div class="card"><h3>Çalışma saatleri</h3><p class="mu">Pzt–Cmt 09:00–17:00<br>Pazar kapalı</p></div><div class="card"><h3>İletişim</h3><p class="mu">Örnek Mah. 1. Sk. No:1<br>0 (000) 000 00 00</p></div></div><div class="card" id="rv"><h2>Randevu talebi</h2>`;
+if(sent)return h+`<p class="pe" style="padding:12px;border-radius:8px"><b>Talebiniz alındı.</b> ${sent}<br>Randevunuz henüz kesinleşmedi; asistanımız sizi arayarak teyit edecek.</p><button class="btn" onclick="sent=null;go()">Yeni talep</button></div>`;
+h+=`<div class="dayr">${[...Array(29).keys()].map(i=>i+1).filter(d=>!isOff(d)).map(d=>`<span class="chip ${pickD==d?'on':''}" onclick="pickD=${d};pickT=null;go()">${lbl(d)}</span>`).join('')}</div><p class="mu">Müsait saatler:</p><div class="chips">`;
+h+=T.map(t=>stOf(pickD,t).s=='free'?`<span class="chip ${pickT==t?'on':''}" onclick="pickT='${t}';go()">${t}</span>`:`<span class="chip cl" style="cursor:default;opacity:.7;text-decoration:line-through">${t}</span>`).join('')+'</div><p class="mu" style="font-size:12px">Üstü çizili saatler dolu. Boş bir saati seçin.</p><div>';
+return h+`</div><br><input id="nm" placeholder="Ad Soyad (sahte isim)"><input id="ph" placeholder="Telefon (sahte numara)"><p class="mu" style="font-size:12px">Telefon numaranız yalnızca klinik tarafından görülür; diğer hastalar başkalarının randevularını göremez.</p><button class="btn p" onclick="send()">Talebi gönder</button></div>`}
+function send(){const n=$('#nm').value.trim();const p=clean($('#ph').value.trim());if(!n||!p||!pickT)return alert('Saat, ad ve telefon gerekli.');if(stOf(pickD,pickT).s!='free'){pickT=null;alert('Bu saat az önce doldu, başka saat seçin.');return go()}A.push({id:id++,d:pickD,t:pickT,n:clean(n),ph:p,st:'pe',by:'Web'});lg(clean(n)+' · '+lbl(pickD)+' '+pickT+' web talebi');sent=lbl(pickD)+' '+pickT+' için talep gönderildi.';pickT=null;go()}
+function asistan(){const p=A.filter(a=>a.st=='pe').sort((a,b)=>a.d-b.d);
+let h=`<div class="card"><h2>Onay bekleyen talepler (${p.length})</h2>`+(p.map(a=>`<div class="slot pe" style="cursor:default"><span style="flex:1"><b style="width:auto">${a.n}</b> · ${lbl(a.d)} ${a.t}</span><button class="btn s" onclick="setSt(${a.id},'ok')">Onayla</button><button class="btn s r" onclick="setSt(${a.id},'iptal')">Reddet</button></div>`).join('')||'<p class="mu">Bekleyen talep yok.</p>')+`</div><p><button class="btn p" onclick="bookForm()">+ Telefon randevusu</button> <span class="mu">veya takvimde boş saate dokunun</span></p>`;return h+cal('asistan')}
+function doktor(){const l=A.filter(a=>a.d==0&&a.st!='iptal').sort((a,b)=>a.t<b.t?-1:1);
+return`<div class="card"><h2>Bugünün programı</h2>${l.map(a=>`<div class="slot ${a.st}" style="cursor:default"><b>${a.t}</b><span>${a.n} · ${tx[a.st]}${a.ph?' · '+a.ph:''}</span></div>`).join('')||'<p class="mu">Bugün randevu yok.</p>'}<br><button class="btn" onclick="togDay()">${lbl(cd)} gününü ${closedD.has(cd)?'yeniden aç':'izin olarak kapat'}</button></div><p class="mu">Takvimde boş bir saate dokunarak kapatın; gri saate dokunarak açın.</p>`+cal('doktor')}
+function go(){if(!ADM)tab='hasta';nav();sync();$('#app').innerHTML=tab=='hasta'?hasta():tab=='asistan'?asistan():tab=='doktor'?doktor():tab=='kayit'?kayit():cal(ROLE)}
+go();
+</script></body></html>
